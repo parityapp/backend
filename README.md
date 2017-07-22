@@ -36,21 +36,21 @@ Responses have the structure `{status, data, message, errors}`, where the `error
     * Response: `[{rate, time}...]`
       * `rate` is a float between [0,1] inclusive
       * `time` is a string that could be passed to a Javascript Date constructor
-  * `GET /most_active/{channels_id}` - Get the most active users of a specific channel
+  * `GET /most_active/{channel_id}` - Get the most active users of a specific channel
     * Response: `[...]`
       * a list of strings
-  * `GET /hot_topics/{channels_id}` - Get the "hot topics" of a channel
+  * `GET /hot_topics/{channel_id}` - Get the "hot topics" of a channel
     * Response: `[...]`
       * a list of strings
-  * `GET /representative_messages` - Get past day's representative messages for the entire channel
+  * `GET /representative_messages/{channel_id}` - Get past day's representative messages for the entire channel
     * Response: `[{username, message}]`
-  * `POST /representative_messages`
+  * `POST /representative_messages/{channel_id}`
     * Request: `{time}`
       * `time` must be an ISO string
     * Response: `[{username, message}]`
-  * `GET /summary` - Get past day's summary for the entire channel
+  * `GET /summary/{channel_id}` - Get past day's summary for the entire channel
     * Response: `{summary}`
-  * `POST /summary`
+  * `POST /summary/{channel_id}`
     * Request: `{time}`
       * `time` must be an ISO string
     * Response: `{summary}`
