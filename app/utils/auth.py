@@ -45,13 +45,16 @@ def decode(token: str) -> Union[UserSession, None]:
   if encrypted_payload is None:
     return None
 
-  decrypted_payload_str = simplecrypt.decrypt(
-    os.getenv('TOKEN_SECRET'),
-    binascii.unhexlify(encrypted_payload)
-  ).decode('utf-8')
-  decrypted_payload_dict = json.loads(
-    decrypted_payload_str
-  )
+  try:
+    decrypted_payload_str = simplecrypt.decrypt(
+      os.getenv('TOKEN_SECRET'),
+      binascii.unhexlify(encrypted_payload)
+    ).decode('utf-8')
+    decrypted_payload_dict = json.loads(
+      decrypted_payload_str
+    )
+  except:
+    return None
 
   user_credentials = UserSession()
   user_credentials.username = decrypted_payload_dict.get('username')
