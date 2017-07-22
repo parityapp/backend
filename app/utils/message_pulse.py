@@ -1,5 +1,5 @@
 from typing import List, Dict, Union, Tuple
-from datetime import datetime
+from datetime import datetime, timedelta
 import functools
 import math
 import pydash as _
@@ -82,9 +82,21 @@ def pulse(messages: List[Dict], interval: int=5) -> Union[
       return new_pulse_clusters, new_pulse_rate
 
     # Message doesn't fit in cluster
-    # lock in latest cluster, create new cluster
+    # lock in latest cluster, create new cluster but also fill
+    # in missing clusters in between
+    old_pulse_cluster = _.push(pulse_clusters, latest_pulse)
+    minutes_difference = message_anchored_time - latest_pulse.get('time')
+    intervals_difference = \
+      ((minutes_difference.seconds // 60) // interval) - 1
+    if intervals_difference > 0:
+      for x in range(0, intervals_difference):
+        old_pulse_cluster = _.push(old_pulse_cluster, {
+          'rate': 0,
+          'time': latest_pulse.get('time') + timedelta(minutes=interval * (x + 1))
+        })
+
     return _.push(
-      _.push(pulse_clusters, latest_pulse),
+      old_pulse_cluster,
       _.assign({}, {'rate': 1, 'time': message_anchored_time})
     ), max_pulse_rate
 
