@@ -1,9 +1,9 @@
 import os
 
-from aiohttp.web import Request, Response, json_response, Application, run_app
+from aiohttp.web import Request, Response, Application, run_app
 import aiohttp_cors
 
-from . import auth_controller, stats_controller
+from app import auth_controller, stats_controller
 
 
 async def index(_: Request) -> Response:
