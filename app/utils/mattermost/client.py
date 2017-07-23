@@ -78,3 +78,8 @@ def get_channels_messages(user_session: UserSession) -> List[
       channel.get('id')
     )
   )
+
+
+def get_username_by_id(user_session: UserSession, id: str) -> str:
+  driver: Driver = construct_driver(user_session)
+  return driver.api['users'].get_user(id).get('username')

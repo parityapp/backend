@@ -88,10 +88,10 @@ async def most_active_by_channel_route(request: Request) -> Response:
 
   channel_id = request.match_info['channel_id']
 
-  most_active_users = most_active.most_active_n_users(
+  most_active_users = _.map_(most_active.most_active_n_users(
     client.get_channel_messages(user_session, channel_id),
     5
-  )
+  ), lambda user_id: client.get_username_by_id(user_session, user_id))
 
   return json_response({
     'status': 200,
