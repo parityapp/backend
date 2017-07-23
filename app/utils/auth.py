@@ -57,8 +57,8 @@ def decode(token: str) -> Union[UserSession, None]:
     return None
 
   user_credentials = UserSession()
-  user_credentials.username = decrypted_payload_dict.get('username')
-  user_credentials.password = decrypted_payload_dict.get('password')
+  user_credentials.username = str(decrypted_payload_dict.get('username'))
+  user_credentials.password = str(decrypted_payload_dict.get('password'))
 
   return user_credentials
 
