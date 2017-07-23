@@ -3,6 +3,7 @@ import pydash as _
 
 from .utils.mattermost import client
 from .utils.messages import pulse, most_active
+from .utils.nlp import nlp
 from .utils import route_helpers
 
 async def pulse_route(request: Request) -> Response:
@@ -141,11 +142,22 @@ async def hot_topics_by_channel_route(request: Request) -> Response:
       'errors': []
     })
 
+  try:
+    mattermost = client.Client(user_session)
+  except:
+    return json_response({
+      'status': 400,
+      'data': {},
+      'message': 'Invalid credentials',
+      'errors': []
+    })
+
   channel_id = request.match_info['channel_id']
+  channel_messages = mattermost.get_channel_messages(channel_id)
 
   return json_response({
     'status': 200,
-    'data': [],
+    'data': nlp.keywords_from_msgs(channel_messages),
     'message': 'Success',
     'errors': []
   })
@@ -161,11 +173,22 @@ async def representative_messages_by_channel_route(request: Request) -> Response
       'errors': []
     })
 
+  try:
+    mattermost = client.Client(user_session)
+  except:
+    return json_response({
+      'status': 400,
+      'data': {},
+      'message': 'Invalid credentials',
+      'errors': []
+    })
+
   channel_id = request.match_info['channel_id']
+  channel_messages = mattermost.get_channel_messages(channel_id)
 
   return json_response({
     'status': 200,
-    'data': [],
+    'data': nlp.representative_msgs(channel_messages),
     'message': 'Success',
     'errors': []
   })
@@ -181,11 +204,24 @@ async def summary_by_channel_route(request: Request) -> Response:
       'errors': []
     })
 
+  try:
+    mattermost = client.Client(user_session)
+  except:
+    return json_response({
+      'status': 400,
+      'data': {},
+      'message': 'Invalid credentials',
+      'errors': []
+    })
+
   channel_id = request.match_info['channel_id']
+  channel_messages = mattermost.get_channel_messages(channel_id)
 
   return json_response({
     'status': 200,
-    'data': [],
+    'data': {
+      'summary': nlp.summarize_msgs(channel_messages)
+    },
     'message': 'Success',
     'errors': []
   })
