@@ -20,19 +20,20 @@ def encode(session: UserSession) -> str:
   """
   session_as_string = json.dumps(session.__dict__)
 
-  if os.getenv('ENABLE_ENCRYPT', False):
+  if os.getenv('ENABLE_ENCRYPT') != 'false':
     encrypted_payload = binascii.hexlify(simplecrypt.encrypt(
       os.getenv('TOKEN_SECRET'),
       session_as_string
     )).decode('utf-8')
   else:
     encrypted_payload = session_as_string
-
-  return jwt.encode(
+  result = jwt.encode(
     {'payload': encrypted_payload},
     os.getenv('TOKEN_SECRET'),
     algorithm='HS256'
   ).decode('utf-8')
+
+  return result
 
 
 def decode(token: str) -> Union[UserSession, None]:
@@ -41,22 +42,23 @@ def decode(token: str) -> Union[UserSession, None]:
   :param token: String
   :return:
   """
-  encrypted_payload = jwt.decode(
-    token,
-    os.getenv('TOKEN_SECRET'),
-    algorithms=['HS256']
-  ).get('payload')
-  if encrypted_payload is None:
-    return None
 
   try:
-    if os.getenv('ENABLE_ENCRYPT', False):
+    jwt_payload = jwt.decode(
+      token,
+      os.getenv('TOKEN_SECRET'),
+      algorithms=['HS256']
+    ).get('payload')
+    if jwt_payload is None:
+      return None
+
+    if os.getenv('ENABLE_ENCRYPT') != 'false':
       decrypted_payload_str = simplecrypt.decrypt(
         os.getenv('TOKEN_SECRET'),
-        binascii.unhexlify(encrypted_payload)
+        binascii.unhexlify(jwt_payload)
       ).decode('utf-8')
     else:
-      decrypted_payload_str = encrypted_payload.encode('utf-8')
+      decrypted_payload_str = jwt_payload
     decrypted_payload_dict = json.loads(decrypted_payload_str)
   except:
     return None

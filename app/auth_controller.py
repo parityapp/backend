@@ -46,16 +46,12 @@ async def auth_route(request: Request) -> Response:
 
   token_str = auth.encode(user_session)
   user_channels = mattermost.get_channels()
-  all_messages = mattermost.get_channels_messages()
+  all_messages = pulse.pulse_global(mattermost.get_channels_messages())
   global_pulse = _.map_(
-    pulse.pulse_global(all_messages),
+    all_messages,
     lambda pulse: _.assign(
       pulse,
-      {'time': pulse.get('time').isoformat()},
-      {'userid': mattermost.get_username_by_id(
-        pulse.get('userid')
-      )
-      }
+      {'time': pulse.get('time').isoformat()}
     )
   )
 
