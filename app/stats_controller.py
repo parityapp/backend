@@ -188,7 +188,16 @@ async def representative_messages_by_channel_route(request: Request) -> Response
 
   return json_response({
     'status': 200,
-    'data': nlp.representative_msgs(channel_messages),
+    'data': _.map_(
+      nlp.representative_msgs(channel_messages),
+      lambda message: _.assign(
+        message,
+        {'timestamp': message.get('timestamp').isoformat()},
+        {'userid': mattermost.get_username_by_id(
+          message.get('userid')
+        )}
+      )
+    ),
     'message': 'Success',
     'errors': []
   })

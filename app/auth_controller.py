@@ -51,7 +51,11 @@ async def auth_route(request: Request) -> Response:
     pulse.pulse_global(all_messages),
     lambda pulse: _.assign(
       pulse,
-      {'time': pulse.get('time').isoformat()}
+      {'time': pulse.get('time').isoformat()},
+      {'userid': mattermost.get_username_by_id(
+        pulse.get('userid')
+      )
+      }
     )
   )
 
