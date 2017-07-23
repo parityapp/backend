@@ -1,0 +1,11 @@
+version: '3'
+services:
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend_docker
+    ports:
+      - "8000:80"
+    env_file:
+      - backend.env

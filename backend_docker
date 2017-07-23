@@ -1,0 +1,10 @@
+FROM python:3.6.0
+MAINTAINER Alastair Paragas <alastairparagas@gmail.com>
+
+ADD app.py /parity/
+ADD requirements.txt /parity/
+ADD ./app /parity/app
+
+RUN pip3 install -r /parity/requirements.txt
+
+CMD ["python", "/parity/app.py"]
