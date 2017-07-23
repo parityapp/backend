@@ -1,4 +1,4 @@
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Union, Tuple, Union
 from datetime import datetime, timedelta
 import functools
 import math
@@ -32,6 +32,25 @@ def round_to_nearest_n_minutes(
     second=0,
     microsecond=0
   )
+
+
+def zero_pulses(start_time: datetime,
+                end_time: datetime,
+                interval: int) -> List[Dict]:
+  minutes_difference = end_time - start_time
+  intervals_difference = \
+    ((minutes_difference.seconds // 60) // interval) - 1
+
+  if intervals_difference > 0:
+    pulses = []
+    for x in range(0, intervals_difference):
+      pulses = _.push([], {
+        'rate': 0,
+        'time': start_time + timedelta(minutes=interval * (x + 1))
+      })
+    return pulses
+
+  return []
 
 
 def pulse(messages: List[Dict], interval: int=5) -> Union[
@@ -85,15 +104,11 @@ def pulse(messages: List[Dict], interval: int=5) -> Union[
     # lock in latest cluster, create new cluster but also fill
     # in missing clusters in between
     old_pulse_cluster = _.push(pulse_clusters, latest_pulse)
-    minutes_difference = message_anchored_time - latest_pulse.get('time')
-    intervals_difference = \
-      ((minutes_difference.seconds // 60) // interval) - 1
-    if intervals_difference > 0:
-      for x in range(0, intervals_difference):
-        old_pulse_cluster = _.push(old_pulse_cluster, {
-          'rate': 0,
-          'time': latest_pulse.get('time') + timedelta(minutes=interval * (x + 1))
-        })
+    old_pulse_cluster = _.concat(zero_pulses(
+      start_time=latest_pulse.get('time'),
+      end_time=message_anchored_time,
+      interval=interval
+    ), old_pulse_cluster)
 
     return _.push(
       old_pulse_cluster,
@@ -109,3 +124,82 @@ def pulse(messages: List[Dict], interval: int=5) -> Union[
       'rate': pulse_dict.get('rate') / max_rate
     })
   return _.map_(pulse_clusters, rate_normalizer(max_pulse_rate))
+
+
+def pulse_global(message_groups: List[List[Dict]],
+                 interval: int=5) -> Union[
+  List[Dict],
+  None
+]:
+  pulses: List[List[Dict]] = _.map_(
+    message_groups,
+    lambda message: pulse(message, interval)
+  )
+
+  def remove_nones(pulses: List[Union[List[Dict], None]],
+                   pulse: Union[List[Dict], None]) -> List[List[Dict]]:
+    if pulse is None:
+      return pulses
+
+    return _.push(pulses, pulse)
+  pulses = _.reduce_(pulses, remove_nones, [])
+
+  def pulses_align(pulses: List[List[Dict]]) -> List[List[Dict]]:
+    earliest_time = _.min_by(
+      pulses,
+      lambda pulse: pulse[0].get('time')
+    )[0].get('time')
+    latest_time = _.max_by(
+      pulses,
+      lambda pulse: pulse[-1].get('time')
+    )[0].get('time')
+
+    return _.map_(
+      pulses,
+      lambda pulse: _.concat(zero_pulses(
+        start_time=earliest_time,
+        end_time=pulse[0].get('time'),
+        interval=interval
+      ), pulse, zero_pulses(
+        start_time=pulse[-1].get('time'),
+        end_time=latest_time,
+        interval=interval
+      ))
+    )
+  pulses = pulses_align(pulses)
+
+  def collapser(collapsed_pulses: List[Dict],
+                pulses: List[Dict]) -> List[Dict]:
+    if not collapsed_pulses:
+      return pulses
+
+    def message_adder(index):
+      collapsed_pulse = collapsed_pulses[index]
+      pulse = pulses[index]
+
+      return _.assign(
+        collapsed_pulse, {
+          'rate': collapsed_pulse.get('rate') + pulse.get('rate')
+        }
+      )
+
+    return _.map_(
+      _.range_(len(collapsed_pulses)),
+      message_adder
+    )
+  pulse_clusters = _.reduce_(
+    pulses,
+    collapser,
+    []
+  )
+  max_pulse_rate = _.max_by(pulse_clusters, 'rate').get('rate')
+
+  def rate_normalizer(max_rate: int):
+    return lambda pulse_dict: _.assign(pulse_dict, {
+      'rate': pulse_dict.get('rate') / max_rate
+    })
+
+  return _.map_(
+    pulse_clusters,
+    rate_normalizer(max_pulse_rate)
+  )
