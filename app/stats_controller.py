@@ -6,7 +6,7 @@ from .utils.messages import pulse, most_active
 from .utils import route_helpers
 
 async def pulse_route(request: Request) -> Response:
-  user_session = route_helpers.get_session_from_request(request)
+  user_session = await route_helpers.get_session_from_request(request)
   if user_session is None:
     return json_response({
       'status': 400,
@@ -40,7 +40,7 @@ async def pulse_route(request: Request) -> Response:
   })
 
 async def pulse_by_channel_route(request: Request) -> Response:
-  user_session = route_helpers.get_session_from_request(request)
+  user_session = await route_helpers.get_session_from_request(request)
   if user_session is None:
     return json_response({
       'status': 400,
@@ -77,7 +77,7 @@ async def pulse_by_channel_route(request: Request) -> Response:
   })
 
 async def most_active_by_channel_route(request: Request) -> Response:
-  user_session = route_helpers.get_session_from_request(request)
+  user_session = await route_helpers.get_session_from_request(request)
   if user_session is None:
     return json_response({
       'status': 400,
@@ -102,7 +102,7 @@ async def most_active_by_channel_route(request: Request) -> Response:
 
 
 async def hot_topics_by_channel_route(request: Request) -> Response:
-  user_session = route_helpers.get_session_from_request(request)
+  user_session = await route_helpers.get_session_from_request(request)
   if user_session is None:
     return json_response({
       'status': 400,
@@ -122,7 +122,7 @@ async def hot_topics_by_channel_route(request: Request) -> Response:
 
 
 async def representative_messages_by_channel_route(request: Request) -> Response:
-  user_session = route_helpers.get_session_from_request(request)
+  user_session = await route_helpers.get_session_from_request(request)
   if user_session is None:
     return json_response({
       'status': 400,
@@ -142,7 +142,7 @@ async def representative_messages_by_channel_route(request: Request) -> Response
 
 
 async def summary_by_channel_route(request: Request) -> Response:
-  user_session = route_helpers.get_session_from_request(request)
+  user_session = await route_helpers.get_session_from_request(request)
   if user_session is None:
     return json_response({
       'status': 400,
