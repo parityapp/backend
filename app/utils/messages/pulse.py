@@ -131,6 +131,9 @@ def pulse_global(message_groups: List[List[Dict]],
   List[Dict],
   None
 ]:
+  if not message_groups:
+    return []
+
   pulses: List[List[Dict]] = _.map_(
     message_groups,
     lambda message: pulse(message, interval)
