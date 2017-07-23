@@ -1,4 +1,5 @@
 aiohttp==2.2.3
+aiohttp-cors==0.5.3
 async-timeout==1.2.1
 Cerberus==1.1
 certifi==2017.4.17
@@ -11,6 +12,7 @@ pydash==4.1.0
 PyJWT==1.5.2
 requests==2.18.1
 simple-crypt==4.1.7
+typing==3.6.1
 urllib3==1.21.1
 websockets==3.3
 yarl==0.12.0
