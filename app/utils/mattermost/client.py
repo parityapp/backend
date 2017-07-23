@@ -62,10 +62,10 @@ def get_channel_messages(user_session: UserSession,
       )
     }
 
-  return _.map_(
+  return sorted(_.map_(
     _.reverse(channel_messages.get('order')),
     message_transformer
-  )
+  ), key=lambda message: message.get('timestamp'))
 
 
 def get_channels_messages(user_session: UserSession) -> List[
