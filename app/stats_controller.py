@@ -1,4 +1,5 @@
 from aiohttp.web import Request, Response, json_response
+import pydash as _
 
 from .utils.mattermost import client
 from .utils.messages import pulse, most_active
@@ -14,7 +15,15 @@ async def pulse_route(request: Request) -> Response:
       'errors': []
     })
 
-  pulse_beat = pulse.pulse_global(client.get_channels_messages(user_session))
+  pulse_beat = _.map_(
+    pulse.pulse_global(
+      client.get_channels_messages(user_session)
+    ),
+    lambda pulse: _.assign(
+      pulse,
+      {'time': pulse.get('time').isoformat()}
+    )
+  )
   if pulse_beat is None:
     return json_response({
       'status': 400,
@@ -42,9 +51,16 @@ async def pulse_by_channel_route(request: Request) -> Response:
 
   channel_id = request.match_info['channel_id']
 
-  pulse_beat = pulse.pulse(
-    client.get_channel_messages(user_session, channel_id),
+  pulse_beat = _.map_(
+    pulse.pulse(
+      client.get_channel_messages(user_session, channel_id)
+    ),
+    lambda pulse: _.assign(
+      pulse,
+      {'time': pulse.get('time').isoformat()}
+    )
   )
+
   if pulse_beat is None:
     return json_response({
       'status': 400,

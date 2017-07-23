@@ -1,5 +1,6 @@
 from aiohttp.web import Request, Response, json_response
 from cerberus import Validator
+import pydash as _
 
 from .utils import auth
 from .utils.mattermost import client
@@ -45,8 +46,14 @@ async def auth_route(request: Request) -> Response:
 
   token_str = auth.encode(user_session)
   user_channels = client.get_channels(user_session)
-  global_pulse = pulse.pulse_global(
-    client.get_channels_messages(user_session)
+  global_pulse = _.map_(
+    pulse.pulse_global(
+      client.get_channels_messages(user_session)
+    ),
+    lambda pulse: _.assign(
+      pulse,
+      {'time': pulse.get('time').isoformat()}
+    )
   )
 
   return json_response({
