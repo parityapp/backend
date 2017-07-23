@@ -16,4 +16,4 @@ async def get_session_from_request(request: Request) -> Union[
   if string_user_session is None:
     return None
 
-  auth.decode(string_user_session)
+  return auth.decode(string_user_session)
