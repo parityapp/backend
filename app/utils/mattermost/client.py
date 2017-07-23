@@ -20,7 +20,7 @@ def construct_driver(user_session: UserSession) -> Driver:
   return driver
 
 
-def get_channels(user_session: UserSession) -> List[List[Dict]]:
+def get_channels(user_session: UserSession) -> List[Dict]:
   driver: Driver = construct_driver(user_session)
   teams_list = driver.api['teams'].get_teams()
 
@@ -36,7 +36,7 @@ def get_channels(user_session: UserSession) -> List[List[Dict]]:
       }
     return _.map_(channels_list, channel_transformer)
 
-  return _.map_(teams_list, channels_per_team)
+  return _.flatten(_.map_(teams_list, channels_per_team))
 
 
 def get_channel_messages(user_session: UserSession,
@@ -65,4 +65,16 @@ def get_channel_messages(user_session: UserSession,
   return _.map_(
     _.reverse(channel_messages.get('order')),
     message_transformer
+  )
+
+
+def get_channels_messages(user_session: UserSession) -> List[
+  List[Dict]
+]:
+  return _.map_(
+    get_channels(user_session),
+    lambda channel: get_channel_messages(
+      user_session,
+      channel.get('id')
+    )
   )
