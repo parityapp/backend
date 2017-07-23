@@ -30,12 +30,12 @@ async def auth_route(request: Request) -> Response:
       'errors': validator.errors
     })
 
-  user_session = client.UserSession()
+  user_session = auth.UserSession()
   user_session.username = request_body.get('username')
   user_session.password = request_body.get('password')
 
   try:
-    client.construct_driver(user_session)
+    mattermost = client.Client(user_session)
   except:
     return json_response({
       'status': 400,
@@ -45,11 +45,10 @@ async def auth_route(request: Request) -> Response:
     })
 
   token_str = auth.encode(user_session)
-  user_channels = client.get_channels(user_session)
+  user_channels = mattermost.get_channels()
+  all_messages = mattermost.get_channels_messages()
   global_pulse = _.map_(
-    pulse.pulse_global(
-      client.get_channels_messages(user_session)
-    ),
+    pulse.pulse_global(all_messages),
     lambda pulse: _.assign(
       pulse,
       {'time': pulse.get('time').isoformat()}

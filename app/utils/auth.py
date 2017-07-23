@@ -56,7 +56,7 @@ def decode(token: str) -> Union[UserSession, None]:
         binascii.unhexlify(encrypted_payload)
       ).decode('utf-8')
     else:
-      decrypted_payload_str = encrypted_payload
+      decrypted_payload_str = encrypted_payload.encode('utf-8')
     decrypted_payload_dict = json.loads(decrypted_payload_str)
   except:
     return None
